@@ -51,6 +51,31 @@ with run.start(plan) as r:
 Each record goes to the Station's collector, which delivers it to MIMICK even
 across a lost connection. Outside a runbook, the SDK prints the records instead.
 
+## Report an OpenHTF test
+
+Install the `openhtf` extra, which pins OpenHTF 1.6.3:
+
+```dockerfile
+RUN pip install "mimick-sdk[openhtf] @ git+https://github.com/CriticalShift/MIMICK-sdk@v0.10.7"
+```
+
+Then run the test through the library instead of `test.execute()`:
+
+```python
+import openhtf as htf
+from mimick import openhtf as mimick_htf
+
+test = htf.Test(power_on, htf.Subtest("Rails", vbat), flash, boot)
+mimick_htf.execute(test)
+```
+
+The library sends the phase tree as the run's plan, then reports each phase,
+group, subtest, branch and checkpoint as it runs, with OpenHTF's own outcomes,
+measurements, diagnoses, attachments and logs. A node's key is its path of
+names, such as `HWI v2/main/flash`, so it stays the same from run to run: name
+every branch and checkpoint. `examples/hwi_v2` is a complete runbook for the
+HWI v2 board, and runs off the bench with `python hwi_test.py --fake`.
+
 ## Drive peripherals
 
 ```python

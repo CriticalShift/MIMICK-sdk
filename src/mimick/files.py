@@ -50,6 +50,16 @@ def media_type_of(path: str, name: str) -> str:
     return "text/plain; charset=utf-8" if b"\x00" not in head else "application/octet-stream"
 
 
+def attach_bytes(run: Run, task_id: str, name: str, data: bytes, media_type: str = "") -> str:
+    """Uploads data held in memory under name, and writes the attach record."""
+    import tempfile
+
+    with tempfile.NamedTemporaryFile(prefix="mimick-attach-") as f:
+        f.write(data)
+        f.flush()
+        return attach(run, task_id, f.name, name, media_type)
+
+
 def attach(run: Run, task_id: str, path: str, name: str = "", media_type: str = "") -> str:
     """Uploads path and writes the attach record. Returns the file id."""
     name = name or os.path.basename(path)

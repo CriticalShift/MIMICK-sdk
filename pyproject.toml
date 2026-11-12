@@ -19,6 +19,11 @@ dependencies = [
   "opentelemetry-proto>=1.33",
 ]
 
+[project.optional-dependencies]
+# mimick.openhtf reads OpenHTF's live test state, which is not a stable API:
+# pinned to the release it was written and tested against.
+openhtf = ["openhtf==1.6.3"]
+
 [project.urls]
 Homepage = "https://mimick.cloud"
 Source = "https://github.com/CriticalShift/MIMICK-sdk"

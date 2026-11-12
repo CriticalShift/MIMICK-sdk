@@ -19,10 +19,20 @@ RUN_TOKEN_KEY = "x-mimick-run-token"
 
 _current: contextvars.ContextVar[str] = contextvars.ContextVar("mimick_node_run", default="")
 
+# The node run for a thread with nothing in its context, such as a thread a test
+# framework starts for each step. A framework adapter sets it as steps run.
+_fallback = ""
+
 
 def current() -> str:
     """The node run id calls are recorded under, or ''."""
-    return _current.get()
+    return _current.get() or _fallback
+
+
+def set_fallback(node_run_id: str) -> None:
+    """Sets the node run a call is recorded under when its context names none."""
+    global _fallback
+    _fallback = node_run_id
 
 
 @contextmanager

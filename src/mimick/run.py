@@ -24,13 +24,15 @@ from mimick import correlation, env as _env, events
 from mimick.plan import Measure, Node, Plan, canonicalize, digest, measure, node, plan  # noqa: F401
 
 PASS, FAIL, ERROR, ABORTED, SKIP, INCONCLUSIVE = "pass", "fail", "error", "aborted", "skip", "inconclusive"
+# A node its framework gives no outcome, such as an OpenHTF group.
+NONE = "none"
 ERROR_SOURCES = ("dut", "test", "infrastructure")
 _CODE = re.compile(r"^[A-Z0-9_]+$")
 
 # Best to worst, for a parent's or the run's worst outcome.
 _RANK = {SKIP: 1, PASS: 2, INCONCLUSIVE: 3, ABORTED: 4, FAIL: 5, ERROR: 6}
 
-_STOP_VERB = {PASS: "passed", FAIL: "failed", SKIP: "skipped", ERROR: "errored", ABORTED: "aborted",
+_STOP_VERB = {NONE: "ended", PASS: "passed", FAIL: "failed", SKIP: "skipped", ERROR: "errored", ABORTED: "aborted",
               INCONCLUSIVE: "was inconclusive"}
 
 
@@ -190,6 +192,14 @@ class Step:
     # -- lifecycle ------------------------------------------------------------
 
     def __enter__(self) -> Step:
+        self.begin()
+        self._reset = correlation._current.set(self.id)
+        return self
+
+    def begin(self) -> Step:
+        """Opens the step without making it the context's current one, for an
+        adapter that opens and closes steps from threads other than the test's.
+        Close it with end()."""
         r = self.run
         with r._lock:
             self.parent = r._open[-1] if r._open else None
@@ -206,8 +216,14 @@ class Step:
         for k, v in self.iteration.items():
             attrs["mimick.task.iteration." + k] = str(v)
         r.emitter.emit(events.Event(events.START, f'Started task "{self.name}"', task_id=self.id, attrs=attrs))
-        self._reset = correlation._current.set(self.id)
         return self
+
+    def end(self, result: str, reason: str = "", marginal: bool = False, source: str = "",
+            codes: tuple[str, ...] = ()) -> None:
+        """Closes the step with the outcome its framework reported, as is: no
+        failed observation or child turns a pass into a fail."""
+        if not self.closed:
+            self._close(result, reason, source=source, codes=codes, marginal=marginal, derive=False)
 
     def __exit__(self, exc_type, exc, tb) -> bool:
         if self._reset is not None:
@@ -257,9 +273,9 @@ class Step:
         self._set = (result, reason, source, tuple(codes), marginal)
 
     def _close(self, result: str, reason: str = "", source: str = "", codes: tuple[str, ...] = (),
-               marginal: bool = False) -> None:
+               marginal: bool = False, derive: bool = True) -> None:
         r = self.run
-        if result == PASS:
+        if derive and result == PASS:
             why = ""
             if self._failed_observations:
                 why = "observation " + ", ".join(self._failed_observations) + " failed"
@@ -268,7 +284,8 @@ class Step:
             if why:
                 result, reason = FAIL, reason or "Passed, but " + why
                 print(f'mimick: "{self.name}" is recorded as failed: {why}', file=sys.stderr)
-        marginal = result == PASS and (marginal or self._marginal or _worst(self._children)[1])
+        if derive:
+            marginal = result == PASS and (marginal or self._marginal or _worst(self._children)[1])
         out: list[events.Event] = []
         for c in codes:
             out.append(events.Event(events.MESSAGE, reason or "Diagnosis " + c, level="error", task_id=self.id,
@@ -297,11 +314,13 @@ class Step:
 
     def observe(self, name: str, value: Any, unit: str = "", lower: float | None = None,
                 upper: float | None = None, marginal: tuple[float | None, float | None] | None = None,
-                coords: dict[str, str] | None = None, verdict: bool = True) -> str:
+                coords: dict[str, str] | None = None, verdict: bool | str = True) -> str:
         """Records one value and returns its verdict: pass, fail, marginal or unset.
 
         A value the plan declares takes its unit and limits from the plan, and
         the arguments override them. A failed verdict makes the step fail.
+        verdict=False records no verdict, and a verdict string, such as one a
+        test framework already judged, is recorded as given.
         """
         decl: Measure | None = None
         if self.declared is not None:
@@ -312,7 +331,11 @@ class Step:
         hi = upper if upper is not None else (decl.upper if decl else None)
         mlo, mhi = marginal if marginal else ((decl.marginal or (None, None)) if decl else (None, None))
         result = "unset"
-        if verdict and typ == "num":
+        if isinstance(verdict, str):
+            if verdict not in ("pass", "fail", "marginal", "unset"):
+                raise ValueError("verdict must be pass, fail, marginal or unset")
+            result = verdict
+        elif verdict and typ == "num":
             result = _judge(number, lo, hi, mlo, mhi)
         attrs = {"mimick.observation.name": name, "mimick.observation.value": text,
                  "mimick.observation.type": typ, "mimick.observation.verdict": result}
