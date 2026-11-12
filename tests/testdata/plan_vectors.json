@@ -1,0 +1,100 @@
+{
+  "valid": [
+    {
+      "name": "minimal",
+      "plan": "{\"nodes\":[{\"key\":\"flash\"}]}",
+      "canonical": "{\"nodes\":[{\"key\":\"flash\"}]}",
+      "digest": "1db829bf485537f674d5a188b81fdf57df1660dc1ac236266827682a2e1409ed"
+    },
+    {
+      "name": "members sorted, whitespace dropped, array order kept",
+      "plan": "{\n  \"nodes\": [\n    { \"name\": \"Flash slot a\", \"kind\": \"phase\", \"key\": \"flash\" },\n    { \"key\": \"power\", \"kind\": \"group\", \"name\": \"Power rails\" },\n    { \"key\": \"vbat\", \"parent\": \"power\", \"kind\": \"phase\", \"name\": \"VBAT\",\n      \"observations\": [ { \"name\": \"vbat\", \"unit\": \"V\", \"lower\": 3.6, \"upper\": 4.3, \"marginal_lower\": 3.70, \"marginal_upper\": 4.2 } ] }\n  ]\n}\n",
+      "canonical": "{\"nodes\":[{\"key\":\"flash\",\"kind\":\"phase\",\"name\":\"Flash slot a\"},{\"key\":\"power\",\"kind\":\"group\",\"name\":\"Power rails\"},{\"key\":\"vbat\",\"kind\":\"phase\",\"name\":\"VBAT\",\"observations\":[{\"lower\":3.6,\"marginal_lower\":3.7,\"marginal_upper\":4.2,\"name\":\"vbat\",\"unit\":\"V\",\"upper\":4.3}],\"parent\":\"power\"}]}",
+      "digest": "8817a59ad57ab90930f0f6ab245d1865948c6a96b752f7955124e58ad58eefb5"
+    },
+    {
+      "name": "numbers in ECMAScript form",
+      "plan": "{\"nodes\":[{\"key\":\"n\",\"params\":{\"a\":1.0,\"b\":-0,\"c\":1E2,\"d\":0.0000001,\"e\":1e21,\"f\":4.50,\"g\":2e-3,\"h\":123456789012345678901}}]}",
+      "canonical": "{\"nodes\":[{\"key\":\"n\",\"params\":{\"a\":1,\"b\":0,\"c\":100,\"d\":1e-7,\"e\":1e+21,\"f\":4.5,\"g\":0.002,\"h\":123456789012345680000}}]}",
+      "digest": "4e968dce371526233850c2c830d1b7223e548e5053c59c3c6fb8ebabf32e4ef2"
+    },
+    {
+      "name": "strings escaped minimally",
+      "plan": "{\"nodes\":[{\"key\":\"s\",\"name\":\"tab\\there \\\"q\\\" back\\\\slash \\u00e9 \\u20ac \\u001f \\/\"}]}",
+      "canonical": "{\"nodes\":[{\"key\":\"s\",\"name\":\"tab\\there \\\"q\\\" back\\\\slash é € \\u001f /\"}]}",
+      "digest": "4b0edcc9fad099c460447d5e7aa73a88b02ef7960ee274cb439270b5871778c6"
+    },
+    {
+      "name": "member names in UTF-16 order",
+      "plan": "{\"nodes\":[{\"key\":\"u\",\"params\":{\"\\u20ac\":1,\"\\ud83d\\ude00\":2,\"a\":3,\"B\":4,\"\\u00e9\":5,\"\\ufb01\":6}}]}",
+      "canonical": "{\"nodes\":[{\"key\":\"u\",\"params\":{\"B\":4,\"a\":3,\"é\":5,\"€\":1,\"😀\":2,\"ﬁ\":6}}]}",
+      "digest": "e8fb02e5624fae9ed2d58435fb11225590e4727b5a951c7a6129a97af57aa12b"
+    },
+    {
+      "name": "unknown members kept",
+      "plan": "{\"version\":2,\"nodes\":[{\"key\":\"x\",\"doc\":\"Checks x\",\"future\":[true,false,null]}]}",
+      "canonical": "{\"nodes\":[{\"doc\":\"Checks x\",\"future\":[true,false,null],\"key\":\"x\"}],\"version\":2}",
+      "digest": "e16ac0e56d3a2c61cfda3a99a6855ab679bc9a43c37ec8c10b72b4518a28c75a"
+    },
+    {
+      "name": "unit with a non-ASCII character",
+      "plan": "{\"nodes\":[{\"key\":\"thermal\",\"observations\":[{\"name\":\"temp_c\",\"unit\":\"°C\",\"upper\":60}]}]}",
+      "canonical": "{\"nodes\":[{\"key\":\"thermal\",\"observations\":[{\"name\":\"temp_c\",\"unit\":\"°C\",\"upper\":60}]}]}",
+      "digest": "58f5a21ec9d4d701ec5031c6140fea2ac263c77d579e82eb553686e97346b7f5"
+    }
+  ],
+  "invalid": [
+    {
+      "name": "not an object",
+      "plan": "[{\"key\":\"a\"}]"
+    },
+    {
+      "name": "no nodes",
+      "plan": "{}"
+    },
+    {
+      "name": "empty nodes",
+      "plan": "{\"nodes\":[]}"
+    },
+    {
+      "name": "node without a key",
+      "plan": "{\"nodes\":[{\"name\":\"a\"}]}"
+    },
+    {
+      "name": "duplicate key",
+      "plan": "{\"nodes\":[{\"key\":\"a\"},{\"key\":\"a\"}]}"
+    },
+    {
+      "name": "unknown parent",
+      "plan": "{\"nodes\":[{\"key\":\"a\",\"parent\":\"b\"}]}"
+    },
+    {
+      "name": "parent cycle",
+      "plan": "{\"nodes\":[{\"key\":\"a\",\"parent\":\"b\"},{\"key\":\"b\",\"parent\":\"a\"}]}"
+    },
+    {
+      "name": "own parent",
+      "plan": "{\"nodes\":[{\"key\":\"a\",\"parent\":\"a\"}]}"
+    },
+    {
+      "name": "repeated member",
+      "plan": "{\"nodes\":[{\"key\":\"a\",\"key\":\"b\"}]}"
+    },
+    {
+      "name": "repeated observation",
+      "plan": "{\"nodes\":[{\"key\":\"a\",\"observations\":[{\"name\":\"v\"},{\"name\":\"v\"}]}]}"
+    },
+    {
+      "name": "limit is not a number",
+      "plan": "{\"nodes\":[{\"key\":\"a\",\"observations\":[{\"name\":\"v\",\"upper\":\"4\"}]}]}"
+    },
+    {
+      "name": "trailing data",
+      "plan": "{\"nodes\":[{\"key\":\"a\"}]} {}"
+    },
+    {
+      "name": "invalid JSON",
+      "plan": "{\"nodes\":[{\"key\":\"a\"}]"
+    }
+  ]
+}

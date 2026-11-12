@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mimick-sdk"
+version = "0.10.7"
+description = "Drive MIMICK Station peripherals and report test structure and results from a runbook."
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{ name = "Critical Shift" }]
+dependencies = [
+  # The generated stubs check these at import: grpcio no older than the
+  # plugin that wrote them, protobuf no older than the protoc that did.
+  "grpcio>=1.80",
+  "protobuf>=7.34.1",
+  "opentelemetry-proto>=1.33",
+]
+
+[project.urls]
+Homepage = "https://mimick.cloud"
+Source = "https://github.com/CriticalShift/MIMICK-sdk"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"*" = ["py.typed", "*.pyi"]
