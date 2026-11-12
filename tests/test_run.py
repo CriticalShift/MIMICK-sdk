@@ -84,6 +84,18 @@ class RunModel(unittest.TestCase):
         self.assertEqual([s["mimick.task.result"] for s in stops], ["error", "pass"])
         self.assertEqual(stops[0]["mimick.task.error_source"], "test")
 
+    def test_a_retry_replaces_the_failed_attempt(self):
+        with self.start() as r:
+            with r.step("power"):
+                for s in r.retry("vbat", tries=2):
+                    with s:
+                        if s.attempt == 1:
+                            s.fail("noise")
+        stops = attrs_of(self.records(), "mimick.task.stop")
+        self.assertEqual(stops[-2]["mimick.task.name"], "Power rails")
+        self.assertEqual(stops[-2]["mimick.task.result"], "pass")
+        self.assertEqual(stops[-1]["mimick.task.result"], "pass")
+
     def test_loop_coordinates_are_not_retries(self):
         with self.start() as r:
             for slot in ("a", "b"):

@@ -34,8 +34,16 @@ _STOP_VERB = {PASS: "passed", FAIL: "failed", SKIP: "skipped", ERROR: "errored",
               INCONCLUSIVE: "was inconclusive"}
 
 
-def _worse(a: str, b: str) -> str:
-    return b if _RANK.get(b, 0) > _RANK.get(a, 0) else a
+def _worst(latest: dict[tuple, tuple[str, bool]]) -> tuple[str, bool]:
+    """The worst latest outcome among steps, and whether any was marginal. A
+    retry replaces the attempt before it, so a step that passed on its second
+    try fails nothing."""
+    result, marginal = "", False
+    for r, m in latest.values():
+        if _RANK.get(r, 0) > _RANK.get(result, 0):
+            result = r
+        marginal = marginal or m
+    return result, marginal
 
 
 def node_key(name: str) -> str:
@@ -58,8 +66,8 @@ class Run:
         self._lock = threading.Lock()
         self._open: list[Step] = []
         self._attempts: dict[tuple, int] = {}
-        self.top_outcome = ""
-        self.top_marginal = False
+        # The latest outcome of each top-level step, by attempt series.
+        self._top: dict[tuple, tuple[str, bool]] = {}
         self._closed = False
 
     @property
@@ -96,8 +104,9 @@ class Run:
         if self._closed:
             return
         self._closed = True
-        result = outcome or self.top_outcome or PASS
-        marginal = result == PASS and (marginal or self.top_marginal)
+        top, top_marginal = _worst(self._top)
+        result = outcome or top or PASS
+        marginal = result == PASS and (marginal or top_marginal)
         attrs = {"mimick.task.result": result, "mimick.task.marginal": str(marginal).lower()}
         if reason:
             attrs["mimick.task.reason"] = reason
@@ -173,7 +182,8 @@ class Step:
         self._set: tuple[str, str, str, tuple[str, ...], bool] | None = None
         self._failed_observations: list[str] = []
         self._marginal = False
-        self._child_outcome = ""
+        # The latest outcome of each child step, by attempt series.
+        self._children: dict[tuple, tuple[str, bool]] = {}
         self._swallow = False
         self._reset = None
 
@@ -253,12 +263,12 @@ class Step:
             why = ""
             if self._failed_observations:
                 why = "observation " + ", ".join(self._failed_observations) + " failed"
-            elif self._child_outcome in (FAIL, ERROR):
-                why = f"a child step {self._child_outcome}ed"
+            elif _worst(self._children)[0] in (FAIL, ERROR):
+                why = f"a child step {_worst(self._children)[0]}ed"
             if why:
                 result, reason = FAIL, reason or "Passed, but " + why
                 print(f'mimick: "{self.name}" is recorded as failed: {why}', file=sys.stderr)
-        marginal = result == PASS and (marginal or self._marginal)
+        marginal = result == PASS and (marginal or self._marginal or _worst(self._children)[1])
         out: list[events.Event] = []
         for c in codes:
             out.append(events.Event(events.MESSAGE, reason or "Diagnosis " + c, level="error", task_id=self.id,
@@ -279,12 +289,9 @@ class Step:
         with r._lock:
             if self in r._open:
                 r._open.remove(self)
-            if self.parent is not None:
-                self.parent._child_outcome = _worse(self.parent._child_outcome, result)
-                self.parent._marginal = self.parent._marginal or marginal
-            else:
-                r.top_outcome = _worse(r.top_outcome, result)
-                r.top_marginal = r.top_marginal or marginal
+            series = (self.key, tuple(sorted(self.iteration.items())))
+            latest = self.parent._children if self.parent is not None else r._top
+            latest[series] = (result, marginal)
 
     # -- results --------------------------------------------------------------
 
