@@ -31,6 +31,16 @@ class RunReportServiceStub(object):
                 request_serializer=mimick_dot_appliance_dot_v1_dot_run__report__pb2.FileChunk.SerializeToString,
                 response_deserializer=mimick_dot_appliance_dot_v1_dot_run__report__pb2.UploadFileResponse.FromString,
                 _registered_method=True)
+        self.StartMonitor = channel.unary_unary(
+                '/mimick.appliance.v1.RunReportService/StartMonitor',
+                request_serializer=mimick_dot_appliance_dot_v1_dot_run__report__pb2.StartMonitorRequest.SerializeToString,
+                response_deserializer=mimick_dot_appliance_dot_v1_dot_run__report__pb2.Monitor.FromString,
+                _registered_method=True)
+        self.StopMonitor = channel.unary_unary(
+                '/mimick.appliance.v1.RunReportService/StopMonitor',
+                request_serializer=mimick_dot_appliance_dot_v1_dot_run__report__pb2.StopMonitorRequest.SerializeToString,
+                response_deserializer=mimick_dot_appliance_dot_v1_dot_run__report__pb2.MonitorSeries.FromString,
+                _registered_method=True)
 
 
 class RunReportServiceServicer(object):
@@ -57,6 +67,22 @@ class RunReportServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def StartMonitor(self, request, context):
+        """Samples a Controller peripheral on an interval, independent of the test's
+        own timing, until StopMonitor or the end of the run. Each sample is
+        written as an observation row of the step. Added in 0.10.7.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def StopMonitor(self, request, context):
+        """Stops a monitor and returns its series. Added in 0.10.7.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_RunReportServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -64,6 +90,16 @@ def add_RunReportServiceServicer_to_server(servicer, server):
                     servicer.UploadFile,
                     request_deserializer=mimick_dot_appliance_dot_v1_dot_run__report__pb2.FileChunk.FromString,
                     response_serializer=mimick_dot_appliance_dot_v1_dot_run__report__pb2.UploadFileResponse.SerializeToString,
+            ),
+            'StartMonitor': grpc.unary_unary_rpc_method_handler(
+                    servicer.StartMonitor,
+                    request_deserializer=mimick_dot_appliance_dot_v1_dot_run__report__pb2.StartMonitorRequest.FromString,
+                    response_serializer=mimick_dot_appliance_dot_v1_dot_run__report__pb2.Monitor.SerializeToString,
+            ),
+            'StopMonitor': grpc.unary_unary_rpc_method_handler(
+                    servicer.StopMonitor,
+                    request_deserializer=mimick_dot_appliance_dot_v1_dot_run__report__pb2.StopMonitorRequest.FromString,
+                    response_serializer=mimick_dot_appliance_dot_v1_dot_run__report__pb2.MonitorSeries.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -105,6 +141,60 @@ class RunReportService(object):
             '/mimick.appliance.v1.RunReportService/UploadFile',
             mimick_dot_appliance_dot_v1_dot_run__report__pb2.FileChunk.SerializeToString,
             mimick_dot_appliance_dot_v1_dot_run__report__pb2.UploadFileResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def StartMonitor(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/mimick.appliance.v1.RunReportService/StartMonitor',
+            mimick_dot_appliance_dot_v1_dot_run__report__pb2.StartMonitorRequest.SerializeToString,
+            mimick_dot_appliance_dot_v1_dot_run__report__pb2.Monitor.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def StopMonitor(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/mimick.appliance.v1.RunReportService/StopMonitor',
+            mimick_dot_appliance_dot_v1_dot_run__report__pb2.StopMonitorRequest.SerializeToString,
+            mimick_dot_appliance_dot_v1_dot_run__report__pb2.MonitorSeries.FromString,
             options,
             channel_credentials,
             insecure,

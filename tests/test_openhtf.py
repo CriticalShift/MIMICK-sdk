@@ -123,6 +123,36 @@ class HwiExample(unittest.TestCase):
 
 
 @unittest.skipIf(htf is None, "the openhtf extra is not installed")
+class OpenHTFMonitors(unittest.TestCase):
+    def test_monitor_samples_reach_mimick_and_openhtf_judges_the_phase(self):
+        from openhtf.util import units
+
+        readings = iter([10.0, 11.0, 12.0] * 1000)
+
+        @htf.monitors("current_ma", lambda: next(readings), units=units.MILLIAMPERE, poll_interval_ms=20)
+        def soak(test):
+            import time
+
+            time.sleep(0.15)
+
+        with testing.FakeBench() as bench:
+            test = htf.Test(soak)
+            records = []
+            test.add_output_callbacks(records.append)
+            mimick_htf.execute(test, environ=bench.environ)
+            phase = records[0].phases[0]
+            samples = [r.attrs for r in bench.collector.records if r.event_name == "mimick.task.observe"
+                       and r.attrs["mimick.observation.name"] == "current_ma"]
+            self.assertGreaterEqual(len(samples), 3)
+            self.assertEqual(len(samples), len(phase.measurements["current_ma"].measured_value.value))
+            self.assertTrue(all(len([k for k in a if k.startswith("mimick.observation.coords.")]) == 1
+                                for a in samples))
+            stop = [r.attrs for r in bench.collector.records if r.event_name == "mimick.task.stop"
+                    and r.attrs.get("mimick.task.name") == "soak"][0]
+            self.assertEqual(stop["mimick.task.result"], PHASE_OUTCOMES[phase.outcome.name])
+
+
+@unittest.skipIf(htf is None, "the openhtf extra is not installed")
 class PlanCheck(unittest.TestCase):
     def test_an_unnamed_branch_is_refused(self):
         class D(htf.DiagResultEnum):

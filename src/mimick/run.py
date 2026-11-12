@@ -188,6 +188,7 @@ class Step:
         self._children: dict[tuple, tuple[str, bool]] = {}
         self._swallow = False
         self._reset = None
+        self._monitors: list = []
 
     # -- lifecycle ------------------------------------------------------------
 
@@ -275,6 +276,12 @@ class Step:
     def _close(self, result: str, reason: str = "", source: str = "", codes: tuple[str, ...] = (),
                marginal: bool = False, derive: bool = True) -> None:
         r = self.run
+        # A step's monitors end with it, and their series count toward its outcome.
+        for m in list(self._monitors):
+            try:
+                m.stop()
+            except Exception as err:  # noqa: BLE001 - a monitor that cannot stop must not hide the step
+                print(f"mimick: could not stop monitor {m.name}: {err}", file=sys.stderr)
         if derive and result == PASS:
             why = ""
             if self._failed_observations:
@@ -361,6 +368,32 @@ class Step:
 
     def log(self, message: str, level: str = "info", code: str = "", **data: Any) -> None:
         _message(self.run, self.id, message, level, code, data)
+
+    def monitor(self, name: str, every: float = 1.0, unit: str = "", lower: float | None = None,
+                upper: float | None = None, marginal: tuple[float | None, float | None] | None = None,
+                source=None, gpio=None, relay=None, software=None):
+        """Samples a value every `every` seconds until the returned monitor
+        stops, or the step closes. `source` is a function of the test; gpio,
+        relay or software name a Station peripheral that mimickd samples:
+        gpio=(peripheral, pin), relay=(peripheral, channel), software=peripheral
+        or (peripheral, pattern). A value the plan declares takes its unit and
+        limits from the plan.
+        """
+        from mimick import monitor as _monitor
+
+        decl = None
+        if self.declared is not None:
+            decl = next((o for o in self.declared.observations if o.name == name), None)
+        unit = unit or (decl.unit if decl else "")
+        lower = lower if lower is not None else (decl.lower if decl else None)
+        upper = upper if upper is not None else (decl.upper if decl else None)
+        marginal = marginal or (decl.marginal if decl else None)
+        controller = None
+        if source is None:
+            controller = _monitor.controller_source(gpio=gpio, relay=relay, software=software)
+        elif any(x is not None for x in (gpio, relay, software)):
+            raise ValueError("give a source function or a Station peripheral, not both")
+        return _monitor.Monitor(self, name, every, unit, lower, upper, marginal, source, controller).start()
 
     def attach(self, path: str, name: str = "", media_type: str = "") -> str:
         """Uploads a file and attaches it to this step. Returns its file id."""

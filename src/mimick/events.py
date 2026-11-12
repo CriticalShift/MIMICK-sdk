@@ -87,6 +87,14 @@ class Emitter:
                 e.time_ns = e.time_ns or time.time_ns()
                 self._sink.put(e, self.session_id)
 
+    def emit_sample(self, e: Event) -> None:
+        """Sends a monitor sample. Samples are not numbered: they stay in the
+        log store, and the run's own records are what the count accounts for."""
+        if self.run_id:
+            e.attrs["mimick.run.id"] = self.run_id
+        e.time_ns = e.time_ns or time.time_ns()
+        self._sink.put(e, self.session_id)
+
     def flush(self, timeout: float = _POST_TIMEOUT) -> None:
         self._sink.flush(timeout)
 

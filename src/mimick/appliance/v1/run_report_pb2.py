@@ -22,9 +22,10 @@ _runtime_version.ValidateProtobufRuntimeVersion(
 _sym_db = _symbol_database.Default()
 
 
+from mimick.appliance.v1 import common_pb2 as mimick_dot_appliance_dot_v1_dot_common__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n$mimick/appliance/v1/run_report.proto\x12\x13mimick.appliance.v1\"R\n\tFileChunk\x12\x12\n\x04name\x18\x01 \x01(\tR\x04name\x12\x1d\n\nmedia_type\x18\x02 \x01(\tR\tmediaType\x12\x12\n\x04\x64\x61ta\x18\x03 \x01(\x0cR\x04\x64\x61ta\"Y\n\x12UploadFileResponse\x12\x17\n\x07\x66ile_id\x18\x01 \x01(\tR\x06\x66ileId\x12\x12\n\x04size\x18\x02 \x01(\x03R\x04size\x12\x16\n\x06sha256\x18\x03 \x01(\tR\x06sha2562k\n\x10RunReportService\x12W\n\nUploadFile\x12\x1e.mimick.appliance.v1.FileChunk\x1a\'.mimick.appliance.v1.UploadFileResponse(\x01\x42RZPgithub.com/criticalshift/mimick-cloud/common/gen/mimick/appliance/v1;appliancev1b\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n$mimick/appliance/v1/run_report.proto\x12\x13mimick.appliance.v1\x1a mimick/appliance/v1/common.proto\"R\n\tFileChunk\x12\x12\n\x04name\x18\x01 \x01(\tR\x04name\x12\x1d\n\nmedia_type\x18\x02 \x01(\tR\tmediaType\x12\x12\n\x04\x64\x61ta\x18\x03 \x01(\x0cR\x04\x64\x61ta\"Y\n\x12UploadFileResponse\x12\x17\n\x07\x66ile_id\x18\x01 \x01(\tR\x06\x66ileId\x12\x12\n\x04size\x18\x02 \x01(\x03R\x04size\x12\x16\n\x06sha256\x18\x03 \x01(\tR\x06sha256\"\xab\x04\n\x13StartMonitorRequest\x12\x12\n\x04name\x18\x01 \x01(\tR\x04name\x12\x1e\n\x0bnode_run_id\x18\x02 \x01(\tR\tnodeRunId\x12\x19\n\x08\x65very_ms\x18\x03 \x01(\rR\x07\x65veryMs\x12\x12\n\x04unit\x18\x04 \x01(\tR\x04unit\x12\x19\n\x05lower\x18\x05 \x01(\x01H\x01R\x05lower\x88\x01\x01\x12\x19\n\x05upper\x18\x06 \x01(\x01H\x02R\x05upper\x88\x01\x01\x12*\n\x0emarginal_lower\x18\x07 \x01(\x01H\x03R\rmarginalLower\x88\x01\x01\x12*\n\x0emarginal_upper\x18\x08 \x01(\x01H\x04R\rmarginalUpper\x88\x01\x01\x12?\n\x08gpio_pin\x18\n \x01(\x0b\x32\".mimick.appliance.v1.GpioPinSourceH\x00R\x07gpioPin\x12N\n\rrelay_channel\x18\x0b \x01(\x0b\x32\'.mimick.appliance.v1.RelayChannelSourceH\x00R\x0crelayChannel\x12N\n\rsoftware_read\x18\x0c \x01(\x0b\x32\'.mimick.appliance.v1.SoftwareReadSourceH\x00R\x0csoftwareReadB\x08\n\x06sourceB\x08\n\x06_lowerB\x08\n\x06_upperB\x11\n\x0f_marginal_lowerB\x11\n\x0f_marginal_upper\"=\n\rGpioPinSource\x12\x1a\n\x08location\x18\x01 \x01(\tR\x08location\x12\x10\n\x03pin\x18\x02 \x01(\rR\x03pin\"J\n\x12RelayChannelSource\x12\x1a\n\x08location\x18\x01 \x01(\tR\x08location\x12\x18\n\x07\x63hannel\x18\x02 \x01(\rR\x07\x63hannel\"J\n\x12SoftwareReadSource\x12\x1a\n\x08location\x18\x01 \x01(\tR\x08location\x12\x18\n\x07pattern\x18\x02 \x01(\tR\x07pattern\"\x19\n\x07Monitor\x12\x0e\n\x02id\x18\x01 \x01(\tR\x02id\"$\n\x12StopMonitorRequest\x12\x0e\n\x02id\x18\x01 \x01(\tR\x02id\"U\n\rMonitorSample\x12.\n\x02\x61t\x18\x01 \x01(\x0b\x32\x1e.mimick.appliance.v1.TimestampR\x02\x61t\x12\x14\n\x05value\x18\x02 \x01(\x01R\x05value\"\xa3\x02\n\rMonitorSeries\x12\x14\n\x05\x63ount\x18\x01 \x01(\rR\x05\x63ount\x12\x16\n\x06\x65rrors\x18\x02 \x01(\rR\x06\x65rrors\x12\x34\n\x05\x66irst\x18\x03 \x01(\x0b\x32\x1e.mimick.appliance.v1.TimestampR\x05\x66irst\x12\x32\n\x04last\x18\x04 \x01(\x0b\x32\x1e.mimick.appliance.v1.TimestampR\x04last\x12\x10\n\x03min\x18\x05 \x01(\x01R\x03min\x12\x10\n\x03max\x18\x06 \x01(\x01R\x03max\x12\x18\n\x07verdict\x18\x07 \x01(\tR\x07verdict\x12<\n\x07samples\x18\x08 \x03(\x0b\x32\".mimick.appliance.v1.MonitorSampleR\x07samples2\x9f\x02\n\x10RunReportService\x12W\n\nUploadFile\x12\x1e.mimick.appliance.v1.FileChunk\x1a\'.mimick.appliance.v1.UploadFileResponse(\x01\x12V\n\x0cStartMonitor\x12(.mimick.appliance.v1.StartMonitorRequest\x1a\x1c.mimick.appliance.v1.Monitor\x12Z\n\x0bStopMonitor\x12\'.mimick.appliance.v1.StopMonitorRequest\x1a\".mimick.appliance.v1.MonitorSeriesBRZPgithub.com/criticalshift/mimick-cloud/common/gen/mimick/appliance/v1;appliancev1b\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -32,10 +33,26 @@ _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'mimick.appliance.v1.run_rep
 if not _descriptor._USE_C_DESCRIPTORS:
   _globals['DESCRIPTOR']._loaded_options = None
   _globals['DESCRIPTOR']._serialized_options = b'ZPgithub.com/criticalshift/mimick-cloud/common/gen/mimick/appliance/v1;appliancev1'
-  _globals['_FILECHUNK']._serialized_start=61
-  _globals['_FILECHUNK']._serialized_end=143
-  _globals['_UPLOADFILERESPONSE']._serialized_start=145
-  _globals['_UPLOADFILERESPONSE']._serialized_end=234
-  _globals['_RUNREPORTSERVICE']._serialized_start=236
-  _globals['_RUNREPORTSERVICE']._serialized_end=343
+  _globals['_FILECHUNK']._serialized_start=95
+  _globals['_FILECHUNK']._serialized_end=177
+  _globals['_UPLOADFILERESPONSE']._serialized_start=179
+  _globals['_UPLOADFILERESPONSE']._serialized_end=268
+  _globals['_STARTMONITORREQUEST']._serialized_start=271
+  _globals['_STARTMONITORREQUEST']._serialized_end=826
+  _globals['_GPIOPINSOURCE']._serialized_start=828
+  _globals['_GPIOPINSOURCE']._serialized_end=889
+  _globals['_RELAYCHANNELSOURCE']._serialized_start=891
+  _globals['_RELAYCHANNELSOURCE']._serialized_end=965
+  _globals['_SOFTWAREREADSOURCE']._serialized_start=967
+  _globals['_SOFTWAREREADSOURCE']._serialized_end=1041
+  _globals['_MONITOR']._serialized_start=1043
+  _globals['_MONITOR']._serialized_end=1068
+  _globals['_STOPMONITORREQUEST']._serialized_start=1070
+  _globals['_STOPMONITORREQUEST']._serialized_end=1106
+  _globals['_MONITORSAMPLE']._serialized_start=1108
+  _globals['_MONITORSAMPLE']._serialized_end=1193
+  _globals['_MONITORSERIES']._serialized_start=1196
+  _globals['_MONITORSERIES']._serialized_end=1487
+  _globals['_RUNREPORTSERVICE']._serialized_start=1490
+  _globals['_RUNREPORTSERVICE']._serialized_end=1777
 # @@protoc_insertion_point(module_scope)

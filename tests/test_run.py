@@ -132,9 +132,10 @@ class RunModel(unittest.TestCase):
     def test_peripheral_calls_land_under_the_step(self):
         with self.start() as r:
             with r.step("vbat") as s:
-                peripherals.gpio().ReadPin(gpio_pb2.GpioReadPinRequest(handle=peripherals.handle("io0"), pin=3))
-            peripherals.gpio().ReadPin(gpio_pb2.GpioReadPinRequest(pin=3))
+                peripherals.gpio().ReadPin(gpio_pb2.GpioReadPinRequest(handle=peripherals.handle("io0.gpio0"), pin=3))
+            peripherals.gpio().ReadPin(gpio_pb2.GpioReadPinRequest(handle=peripherals.handle("io0.gpio0"), pin=3))
         self.assertEqual([c.task_id for c in self.bench.gpio_calls], [s.id, ""])
+        self.assertEqual(self.bench.opened, ["io0.gpio0"], "a handle is opened once per location")
 
     def test_attach_uploads_with_the_run_token(self):
         with tempfile.NamedTemporaryFile("wb", suffix=".log", delete=False) as f:
